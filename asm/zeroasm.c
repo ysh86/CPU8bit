@@ -70,7 +70,7 @@ TABLE symbol [LSIZE+1]= {
 int lnmb=RNMB;
 
 /* ファイル・ポインタ */
-FILE *src, *obj1, *obj2, *list;
+FILE *src, *obj1, *obj2, *obj, *list;
 /* オブジェクト・ファイル名 */
 char name[81], *end;
 
@@ -160,16 +160,20 @@ void pass_2() {
     src = fopen(name, "r");
     strcpy(end, ".r1");  obj1 = fopen(name, "wb+");
     strcpy(end, ".r2");  obj2 = fopen(name, "wb+");
+    strcpy(end, ".rom"); obj  = fopen(name, "wb+");
     strcpy(end, ".lst"); list = fopen(name, "w");
-    if (!obj1 || !obj2)
+    if (!obj1 || !obj2 || !obj)
         ABORT("can't create obj files");
     if (!list)
         ABORT("cant't create a list file");
     fseek(obj1, 0L, 0);
     fseek(obj2, 0L, 0);
+    fseek(obj,  0L, 0);
     for (n = 0; n <= 0x7FFF; n++) {
         fputc(0x81, obj1);
         fputc(0x00, obj2);
+        fputc(0x81, obj);
+        fputc(0x00, obj);
     }
     while (get_statement()) {
         statement();
@@ -182,6 +186,7 @@ void pass_2() {
     }
     print_label(errcnt);
     fclose(list);
+    fclose(obj);
     fclose(obj2);
     fclose(obj1);
     fclose(src);
@@ -199,8 +204,11 @@ int put_object() {
         ERRTN('J')
     fseek(obj1, loc, 0);
     fseek(obj2, loc, 0);
+    fseek(obj, loc*2, 0);
     fputc(rom1, obj1);
     fputc(rom2, obj2);
+    fputc(rom1, obj);
+    fputc(rom2, obj);
     return 0;
 }
 
