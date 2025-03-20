@@ -1,6 +1,9 @@
 *db/
 *tmp/
 
+*.qws
+*.pin
+
 *.pof
 *.sof
 
