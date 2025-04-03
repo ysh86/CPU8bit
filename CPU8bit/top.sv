@@ -12,7 +12,7 @@ module CPU8bit(
   logic       nRESET;
 */
 
-  // 33.3MHz -> 16.6MHz
+  // 33.000 MHz -> 16.5 MHz
   logic CLK_16;
   always_ff @(posedge CLK) begin
     CLK_16 <= ~CLK_16;

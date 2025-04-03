@@ -91,3 +91,7 @@ set_global_assignment -name MISC_FILE "D:/FPGA/CPU8bit/CPU8bit.dpf"
 set_location_assignment PIN_39 -to CLK
 set_global_assignment -name SYSTEMVERILOG_FILE switch.sv
 set_location_assignment PIN_31 -to SW4
+set_global_assignment -name FLEX10K_CONFIGURATION_DEVICE AUTO
+set_global_assignment -name DISABLE_NCS_AND_OE_PULLUPS_ON_CONFIG_DEVICE ON
+set_global_assignment -name FLEX10K_ENABLE_LOW_VOLTAGE_MODE_ON_CONFIG_DEVICE OFF
+set_global_assignment -name RESERVE_ALL_UNUSED_PINS_NO_OUTPUT_GND "AS INPUT TRI-STATED"
