@@ -6,6 +6,11 @@
 
 *.pof
 *.sof
+*.rpd
+*.jic
+*.map
+*.jam
+*.flash
 
 *.bak
 *.rpt
