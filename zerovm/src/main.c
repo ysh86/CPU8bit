@@ -11,29 +11,40 @@
 #include "../zerocpu/src/cpu.h"
 
 // memory
-typedef struct _ctx_t {
+typedef struct _mem_t {
     uint8_t rom[0x10000];
     uint8_t ram[0x10000];
-} ctx_t;
+} mem_t;
 
-static ctx_t ctx;
+static mem_t mem;
 
 static uint8_t *mmuV2R(context_t ctx, uint32_t vaddr) {
-    ctx_t *c = (ctx_t *)ctx;
+    mem_t *m = (mem_t *)ctx;
 
     // rom
     if (vaddr >= 0x80000000U) {
-        return &c->rom[vaddr - 0x80000000U];
+        return &m->rom[vaddr - 0x80000000U];
     }
 
     // ram
-    return &c->ram[vaddr];
+    return &m->ram[vaddr];
 }
 
 static uint32_t mmuR2V(context_t ctx, uint8_t *raddr) {
     // not implemented
-    //ctx_t *c = (ctx_t *)ctx;
+    //mem_t *m = (mem_t *)ctx;
     return 0;
+}
+
+// syscall
+void syscallHook(context_t ctx) {
+    cpu_t *pcpu = (cpu_t *)ctx;
+
+    // serial out
+    if (pcpu->G1 == 7) {
+        putc(pcpu->sio, stdout);
+        return;
+    }
 }
 
 int main(int argc, char *argv[]) {
@@ -55,7 +66,7 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "; [ERR] Can't open ROM file \"%s\": %s\n", (const char *)argv[1], strerror(ret));
         return EXIT_FAILURE;
     }
-    size_t n = fread(ctx.rom, 1, sizeof(ctx.rom), fp);
+    size_t n = fread(mem.rom, 1, sizeof(mem.rom), fp);
     ret = errno;
     if (n <= 0) {
         fprintf(stderr, "; [ERR] Can't load ROM file \"%s\": %s\n", (const char *)argv[1], strerror(ret));
@@ -73,13 +84,13 @@ int main(int argc, char *argv[]) {
     //////////////////////////
     init(
         &cpu,
-        &ctx,
+        &mem,
         (mmu_v2r_t)mmuV2R,
         (mmu_r2v_t)mmuR2V,
-        (syscall_t)NULL,
+        (syscall_t)syscallHook,
         0, 0);
 
-    const uint32_t eom = 48-2;
+    const uint32_t eom = 72;
     while (1) {
         const uint32_t pc = getPC(&cpu);
 #if 0

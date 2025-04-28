@@ -33,4 +33,24 @@ LOOP:	acc=add(reg0)
 	reg0,psw=dec(reg0)	; z, n(sub)
 	if !z goto LOOP
 	pio=acc			; 0x37=55 out
+
+;
+; print
+;
+
+	sio=068			; 'h'
+	sio=065			; 'e'
+	sio=06C			; 'l'
+	sio=06C			; 'l'
+	sio=06F			; 'o'
+	sio=02C			; ','
+	sio=077			; 'w'
+	sio=06F			; 'o'
+	sio=072			; 'r'
+	sio=06C			; 'l'
+	sio=064			; 'd'
+	sio=00D			; '\r'
+	sio=00A			; '\n'
+
+; end
 	goto $

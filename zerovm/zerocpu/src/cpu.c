@@ -263,6 +263,9 @@ void exec(cpu_t *pcpu) {
         break;
     case 7:
         pcpu->sio = B1;
+        if (pcpu->syscallHook != NULL) {
+            pcpu->syscallHook(pcpu);
+        }
         break;
     case 0x10:
         pcpu->reg0 = B1;
