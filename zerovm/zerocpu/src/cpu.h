@@ -9,7 +9,7 @@
 typedef void * context_t;
 typedef uint8_t *(*mmu_v2r_t)(context_t ctx, uint32_t vaddr);
 typedef uint32_t (*mmu_r2v_t)(context_t ctx, uint8_t *raddr);
-typedef void (*syscall_t)(context_t ctx);
+typedef void (*syscall_t)(context_t ctx, int num, uint8_t *reg);
 
 struct cpu_tag {
     // machine
@@ -47,6 +47,9 @@ struct cpu_tag {
 
     // reg ptr
     uint8_t *r[32];
+
+    // SI
+    bool SI;
 
     //
     // internal

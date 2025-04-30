@@ -111,6 +111,8 @@ void init(
     pcpu->regE = 0;
     pcpu->regF = 0;
 
+    pcpu->SI = false;
+
     pcpu->pc = pc;
 }
 
@@ -191,6 +193,9 @@ void exec(cpu_t *pcpu) {
         B2 = pcpu->pio;
         break;
     case 7:
+        if (pcpu->syscallHook != NULL) {
+            pcpu->syscallHook(pcpu->ctx, 0, &pcpu->sio);
+        }
         B2 = pcpu->sio;
         break;
     case 0x10:
@@ -229,8 +234,8 @@ void exec(cpu_t *pcpu) {
     } else {
         uint8_t D;
         alu(pcpu, B2, &D, S);
-        S[5] = false; // not implemented
-        S[3] = false; // not implemented
+        S[5] = pcpu->SI;
+        S[3] = false; // SO: always empty
         B1 = D;
     }
 
@@ -264,7 +269,7 @@ void exec(cpu_t *pcpu) {
     case 7:
         pcpu->sio = B1;
         if (pcpu->syscallHook != NULL) {
-            pcpu->syscallHook(pcpu);
+            pcpu->syscallHook(pcpu->ctx, 1, &pcpu->sio);
         }
         break;
     case 0x10:
