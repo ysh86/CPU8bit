@@ -67,17 +67,12 @@ int main(int argc, char *argv[]) {
         (syscall_t)syscallHook,
         0, 0);
 
-#if 0
-    const uint32_t eom = 72;
-#endif
+    const uint32_t eom = 0xfffe;
     while (1) {
-#if 0
         const uint32_t pc = getPC(&cpu);
-        fprintf(stderr, "; pid %d: pc:%04x eom:%04x\n", getpid(), pc>>1, eom);
         if (pc >= eom) {
             break;
         }
-#endif
 
         // serial
         serial_tick(machine.serial, &cpu.SI);
@@ -92,8 +87,13 @@ int main(int argc, char *argv[]) {
         exec(&cpu);
     }
 
+    serial_reset(machine.serial);
+    machine.serial = NULL;
+
     // result
-    fprintf(stderr, "; result: pc=%04x, psw=%04x, pio=%04x(%d)\n", getPC(&cpu)>>1, cpu.psw, cpu.pio, cpu.pio);
+    uint32_t pc = getPC(&cpu);
+    fprintf(stderr, "\n");
+    fprintf(stderr, "; result: pc=%02x%02x, psw=%04x, pio=%04x(%d)\n", pc>>8, (pc>>1)&0x7f, cpu.psw, cpu.pio, cpu.pio);
 
     return EXIT_SUCCESS;
 }

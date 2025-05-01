@@ -49,8 +49,37 @@ LOOP:	acc=add(reg0)
 	sio=072			; 'r'
 	sio=06C			; 'l'
 	sio=064			; 'd'
-	sio=00D			; '\r'
-	sio=00A			; '\n'
 
-; end
-	goto $
+;
+; echo
+;
+	reg0=004		; ctrl-d
+	reg1=00D		; CR
+	reg2=page(EXIT)
+
+ECHO:	sio=00D			; '\r'
+	sio=00A			; '\n'
+	sio=03E			; '>'
+	sio=020			; ' '
+
+IN1:	acc,psw=acc
+	if !i goto IN1
+IN2:	acc,psw=acc
+	if i goto IN2
+	reg3=sio
+
+	acc=reg3
+	reg4,psw=sub(reg1)
+	if z goto ECHO		; if CR goto new line
+
+	acc=reg3
+	reg4,psw=sub(reg0)
+	acc=reg2
+	if z goto acc,EXIT	; if ctrl-d goto exit
+	sio=reg3		; else echo
+	goto IN1
+
+
+; exit
+	org 0FF,07F
+EXIT:	goto $
