@@ -15,7 +15,7 @@ module JMP(
 
   logic       cnd;
   logic       jmp;
-  
+
   assign INS3 = PRG[15] & PRG[14];
   assign IF   = PRG[13];
   assign NT   = PRG[12];
@@ -39,9 +39,9 @@ module JMP(
   */
   assign cnd = PSW[CNDs];
   assign jmp = (~IF) | (IF & (NT ^ cnd));
-  
+
   assign JUMP  = INS3 & jmp;
   assign PAGE  = JUMP & PG;
-  assign PAGE0 = AC;
+  assign PAGE0 = ~AC;
 
 endmodule
