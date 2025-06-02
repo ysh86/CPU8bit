@@ -61,6 +61,7 @@ struct cpu_tag {
     uint16_t bin;
 
     // decode, exec
+    bool JUMPR;
     bool JUMP;
     bool PAGE;
     bool PAGE0;

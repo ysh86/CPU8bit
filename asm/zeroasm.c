@@ -337,7 +337,13 @@ int move_statement () {
     case REG:
         rom2 |= fnc;
         break;
+    case ADR:
+        /* L addr. */
+        if (fnc & 0x80) ERRTN('A');
+        fnc = fnc & 0x7F;
+        /* fallthrough */
     case CNS:
+        /* const or H(page) addr. */
         if (fnc > 255 || fnc < -128) ERRTN('N');
         rom1 |= 0x80;
         rom2 |= fnc;
@@ -379,8 +385,16 @@ int goto_statement() {
         f = 2;
     }
     n = get_expression(&t);
-    if ((t != ADR && t != CNS) || (n & 0x80)) ERROR('A');
-    if (f != 1 && (n>>8) != (f ? 0 : page)) ERROR('P');
+    if (t == REG) {
+        if ((rom1 & 0x20) != 0) ERROR('1');
+        rom1 |= ((n << 1) | 0x01);
+        if (!check_chr(',')) ERRTN(',');
+        n = get_expression(&t);
+        if (t != REG) ERROR('A');
+    } else {
+        if ((t != ADR && t != CNS) || (n & 0x80)) ERROR('A');
+        if (f != 1 && (n>>8) != (f ? 0 : page)) ERROR('P');
+    }
     rom2 |= (n & 0x7F);
     size = 1;
     return JUMP;
@@ -667,6 +681,10 @@ int get_value(int *t /* 型 */) {
         if (*t != ADR) ERROR('L');
         if (!check_chr(')')) ERROR(')');
         *t = CNS;
+    } else if (check_chr('\'')) {
+        *t = CNS;
+        r = *ptr++;
+        if (!check_chr('\'')) ERROR('\'');
     } else if (isalpha(*ptr))
         r = search_symbol(t);
     else

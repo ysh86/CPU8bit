@@ -21,6 +21,10 @@ enum si_state_type {
     SI_STATE_STOP1,
     SI_STATE_STOP2,
     SI_STATE_STOP3,
+    SI_STATE_STOP4,
+    SI_STATE_STOP5,
+    SI_STATE_STOP6,
+    SI_STATE_STOP7,
 };
 typedef enum si_state_type si_state_t;
 
@@ -85,7 +89,19 @@ void serial_io(serial_t *serial, int io, uint8_t *reg) {
     }
 
     if (io == SERIAL_O) {
+#if 0
+        // debug
+        int d = *reg;
+        for (int i = 0; i < 8; ++i) {
+            fprintf(serial->out, "%d", (d&0x80)>>7);
+            d <<= 1;
+        }
+        fprintf(serial->out, " ");
+#endif
         fputc(*reg, serial->out);
+#if 0
+        fprintf(serial->out, "\r\n");
+#endif
         return;
     }
 
@@ -161,6 +177,18 @@ void serial_tick(serial_t *serial, bool *irq) {
             serial->si_state = SI_STATE_STOP3;
             break;
         case SI_STATE_STOP3:
+            serial->si_state = SI_STATE_STOP4;
+            break;
+        case SI_STATE_STOP4:
+            serial->si_state = SI_STATE_STOP5;
+            break;
+        case SI_STATE_STOP5:
+            serial->si_state = SI_STATE_STOP6;
+            break;
+        case SI_STATE_STOP6:
+            serial->si_state = SI_STATE_STOP7;
+            break;
+        case SI_STATE_STOP7:
             serial->si_state = SI_STATE_IDLE;
             break;
         default:

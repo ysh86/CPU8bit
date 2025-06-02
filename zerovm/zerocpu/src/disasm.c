@@ -66,7 +66,7 @@ static void operand_string(cpu_t *pcpu, char *str, size_t size, uint8_t mode, ui
 */
 
 void disasm(cpu_t *pcpu) {
-    fprintf(stderr, "addr:%02x%02x bin:%04x INS:%d\n", pcpu->addr>>8, (pcpu->addr>>1)&0x7f, pcpu->bin, pcpu->INS);
+    fprintf(stderr, "addr:%02x%02x bin:%04x INS:%d\r\n", pcpu->addr>>8, (pcpu->addr>>1)&0x7f, pcpu->bin, pcpu->INS);
 /*
     char operand0[32] = {'\0'};
     char operand1[32] = {'\0'};

@@ -144,6 +144,7 @@ void decode(cpu_t *pcpu) {
     bool cnd  = (pcpu->psw>>CNDs) & 1;
     bool jmp  = (!IF) | (IF & (NT ^ cnd));
 
+    pcpu->JUMPR = INS3 & (AC & !PG);
     pcpu->JUMP  = INS3 & jmp;
     pcpu->PAGE  = pcpu->JUMP & PG;
     pcpu->PAGE0 = !AC;
@@ -162,9 +163,13 @@ void decode(cpu_t *pcpu) {
 
 void exec(cpu_t *pcpu) {
     // pc (JMP)
-    if (pcpu->JUMP) {
-        uint8_t page = (pcpu->PAGE) ? ((pcpu->PAGE0) ? 0 : pcpu->acc) : (pcpu->pc-2)>>8;
-        pcpu->pc = (page<<8) | ((pcpu->bin<<1) & 255);
+    if (pcpu->INS == 3) {
+        if (pcpu->JUMPR) {
+            pcpu->pc = (*pcpu->r[pcpu->G1]<<8) | ((*pcpu->r[pcpu->G2]<<1) & 255);
+        } else if (pcpu->JUMP) {
+            uint8_t page = (pcpu->PAGE) ? ((pcpu->PAGE0) ? 0 : pcpu->acc) : (pcpu->pc-2)>>8;
+            pcpu->pc = (page<<8) | ((pcpu->bin<<1) & 255);
+        }
         return;
     }
 
@@ -183,7 +188,9 @@ void exec(cpu_t *pcpu) {
         B2 = pcpu->adL;
         break;
     case 4:
-        pcpu->mem = read8(false, pcpu->mmuV2R(pcpu->ctx, (pcpu->adH<<8) | pcpu->adL));
+        if (pcpu->memR) {
+            pcpu->mem = read8(false, pcpu->mmuV2R(pcpu->ctx, (pcpu->adH<<8) | pcpu->adL));
+        }
         B2 = pcpu->mem;
         break;
     case 5:
@@ -193,7 +200,7 @@ void exec(cpu_t *pcpu) {
         B2 = pcpu->pio;
         break;
     case 7:
-        if (pcpu->syscallHook != NULL) {
+        if ((pcpu->INS&2) == 0 && pcpu->syscallHook != NULL) {
             pcpu->syscallHook(pcpu->ctx, 0, &pcpu->sio);
         }
         B2 = pcpu->sio;
@@ -258,7 +265,9 @@ void exec(cpu_t *pcpu) {
         break;
     case 4:
         pcpu->mem = B1;
-        write8(false, pcpu->mmuV2R(pcpu->ctx, (pcpu->adH<<8) | pcpu->adL), pcpu->mem);
+        if (pcpu->memW) {
+            write8(false, pcpu->mmuV2R(pcpu->ctx, (pcpu->adH<<8) | pcpu->adL), pcpu->mem);
+        }
         break;
     case 5:
         pcpu->tmr = B1;
