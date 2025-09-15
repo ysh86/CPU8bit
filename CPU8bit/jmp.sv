@@ -3,6 +3,7 @@ module JMP(
   input  logic [7:0]  PSW,
   output logic        PAGE0,
   output logic        PAGE,
+  output logic        JUMPR,
   output logic        JUMP
 );
 
@@ -40,6 +41,7 @@ module JMP(
   assign cnd = PSW[CNDs];
   assign jmp = (~IF) | (IF & (NT ^ cnd));
 
+  assign JUMPR = INS3 & (AC & ~PG);
   assign JUMP  = INS3 & jmp;
   assign PAGE  = JUMP & PG;
   assign PAGE0 = ~AC;

@@ -39,8 +39,9 @@ module CPU(
   ID ID(.PRG, .INS, .G1, .FNC, .G2, .G3, .CNS, .w);
   logic PAGE0;
   logic PAGE;
+  logic JUMPR;
   logic JUMP;
-  JMP JMP(.PRG, .PSW, .PAGE0, .PAGE, .JUMP);
+  JMP JMP(.PRG, .PSW, .PAGE0, .PAGE, .JUMPR, .JUMP);
 
   // exec
   logic [7:0] B2;
@@ -138,11 +139,33 @@ module CPU(
   assign PO = PIO;
 
   // PCT: update PC
+  logic [14:0] reg2PC;
+  always_comb begin
+    unique case (G1)
+      5'd0:    reg2PC = {ACC,    B2[6:0]};
+      5'd1:    reg2PC = {PSW,    B2[6:0]};
+      5'd2:    reg2PC = {ADH,    B2[6:0]};
+      5'd3:    reg2PC = {ADL,    B2[6:0]};
+      5'd4:    reg2PC = {q,      B2[6:0]};
+      5'd5:    reg2PC = {TMR,    B2[6:0]};
+      5'd6:    reg2PC = {PI,     B2[6:0]};
+      5'd7:    reg2PC = {SIO,    B2[6:0]};
+      5'd16:   reg2PC = {REG[0], B2[6:0]};
+      5'd17:   reg2PC = {REG[1], B2[6:0]};
+      5'd18:   reg2PC = {REG[2], B2[6:0]};
+      5'd19:   reg2PC = {REG[3], B2[6:0]};
+      5'd20:   reg2PC = {REG[4], B2[6:0]};
+      5'd21:   reg2PC = {REG[5], B2[6:0]};
+      5'd22:   reg2PC = {REG[6], B2[6:0]};
+      5'd23:   reg2PC = {REG[7], B2[6:0]};
+      default: reg2PC = {8'hff,  B2[6:0]}; // invalid
+    endcase
+  end
   logic [14:0] PC_next;
   PCT PCT(.PC, .PAGE0, .PAGE, .JUMP, .ACC, .addr(PRG[6:0]), .PC_next);
   always_ff @(posedge CLK) begin
     if (~nRESET) PC <= 15'd0;
-    else         PC <= PC_next;
+    else         PC <= (JUMPR) ? reg2PC : PC_next;
   end
 
 endmodule
