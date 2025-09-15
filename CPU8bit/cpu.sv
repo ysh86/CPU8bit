@@ -24,8 +24,9 @@ module CPU(
   ram RAM(.address, .data, .we, .q);
 
   // fetch: ROM
+  logic [14:0] PC; // word addr.
   logic [15:0] PRG;
-  PCT PCT(.CLK, .nRESET, .PSW, .PCH(ACC), .PRG);
+  rom ROM(.address(PC[7:0]), .q(PRG));
 
   // decode
   logic [1:0] INS;
@@ -36,6 +37,10 @@ module CPU(
   logic [7:0] CNS;
   logic       w;
   ID ID(.PRG, .INS, .G1, .FNC, .G2, .G3, .CNS, .w);
+  logic PAGE0;
+  logic PAGE;
+  logic JUMP;
+  JMP JMP(.PRG, .PSW, .PAGE0, .PAGE, .JUMP);
 
   // exec
   logic [7:0] B2;
@@ -131,5 +136,13 @@ module CPU(
 
   // write back: dst PO
   assign PO = PIO;
+
+  // PCT: update PC
+  logic [14:0] PC_next;
+  PCT PCT(.PC, .PAGE0, .PAGE, .JUMP, .ACC, .addr(PRG[6:0]), .PC_next);
+  always_ff @(posedge CLK) begin
+    if (~nRESET) PC <= 15'd0;
+    else         PC <= PC_next;
+  end
 
 endmodule
